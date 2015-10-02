@@ -104,7 +104,7 @@ BUILD_BASE	= build
 FW_BASE		= firmware
 
 # name for the target project
-TARGET		= blinky
+TARGET		= highway
 
 # espressif tool to concatenate sections for OTA upload using bootloader v1.2+
 APPGEN_TOOL	?= gen_appbin.py
@@ -113,7 +113,7 @@ CFLAGS=
 
 # which modules (subdirectories) of the project to include in compiling
 LIBRARIES_DIR 	= libraries
-MODULES		  	+= lib/uart lib/wifi main 
+MODULES		  	+= lib/uart lib/httpd lib/cgi lib/wifi src 
 MODULES			+= $(foreach sdir,$(LIBRARIES_DIR),$(wildcard $(sdir)/*))
 EXTRA_INCDIR 	= include .
 
