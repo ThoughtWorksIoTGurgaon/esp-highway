@@ -12,4 +12,5 @@ user_init()
     os_printf("Starting\n\r");
 
     wifiInit();
+    wifiStartScan();
 }

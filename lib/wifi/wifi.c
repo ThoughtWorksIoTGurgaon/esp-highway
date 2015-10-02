@@ -15,8 +15,6 @@
 
 //#define SLEEP_MODE LIGHT_SLEEP_T
 #define SLEEP_MODE MODEM_SLEEP_T
-#define DEBUGIP
-#define CGIWIFI_DBG
 
 // ===== wifi status change callbacks
 static WifiStateChangeCb wifi_state_change_cb[4];
@@ -85,6 +83,101 @@ static void ICACHE_FLASH_ATTR wifiHandleEventCb(System_Event_t *evt) {
   }
 }
 
+// ===== wifi scanning
+
+//WiFi access point data
+typedef struct {
+  char ssid[32];
+  sint8 rssi;
+  char enc;
+} ApData;
+
+//Scan result
+typedef struct {
+  char scanInProgress; //if 1, don't access the underlying stuff from the webpage.
+  ApData **apData;
+  int noAps;
+} ScanResultData;
+
+//Static scan status storage.
+static ScanResultData wifiAps;
+
+//Callback the code calls when a wlan ap scan is done. Basically stores the result in
+//the wifiAps struct.
+void ICACHE_FLASH_ATTR wifiScanDoneCb(void *arg, STATUS status) {
+  int n;
+  struct bss_info *bss_link = (struct bss_info *)arg;
+
+  if (status!=OK) {
+    os_printf("wifiScanDoneCb status=%d\n", status);
+    wifiAps.scanInProgress=0;
+    return;
+  }
+
+  //Clear prev ap data if needed.
+  if (wifiAps.apData!=NULL) {
+    for (n=0; n<wifiAps.noAps; n++) os_free(wifiAps.apData[n]);
+    os_free(wifiAps.apData);
+  }
+
+  //Count amount of access points found.
+  n=0;
+  while (bss_link != NULL) {
+    bss_link = bss_link->next.stqe_next;
+    n++;
+  }
+  //Allocate memory for access point data
+  wifiAps.apData=(ApData **)os_malloc(sizeof(ApData *)*n);
+  wifiAps.noAps=n;
+  os_printf("Scan done: found %d APs\n", n);
+
+  //Copy access point data to the static struct
+  n=0;
+  bss_link = (struct bss_info *)arg;
+  while (bss_link != NULL) {
+    if (n>=wifiAps.noAps) {
+      //This means the bss_link changed under our nose. Shouldn't happen!
+      //Break because otherwise we will write in unallocated memory.
+      os_printf("Huh? I have more than the allocated %d aps!\n", wifiAps.noAps);
+      break;
+    }
+
+    //Save the ap data.
+    wifiAps.apData[n]=(ApData *)os_malloc(sizeof(ApData));
+    wifiAps.apData[n]->rssi=bss_link->rssi;
+    wifiAps.apData[n]->enc=bss_link->authmode;
+    strncpy(wifiAps.apData[n]->ssid, (char*)bss_link->ssid, 32);
+    os_printf("bss%d: %s (%d)\n", n+1, (char*)bss_link->ssid, bss_link->rssi);
+
+    bss_link = bss_link->next.stqe_next;
+    n++;
+  }
+
+  //We're done.
+  wifiAps.scanInProgress = 0;
+}
+
+#define AP_LIST_REFRESH (2000) // 15 seconds
+static ETSTimer scanTimer;
+static void ICACHE_FLASH_ATTR scanStartCb(void *arg) {
+  if (!wifiAps.scanInProgress) {
+    wifiAps.scanInProgress = 1;
+    os_printf("Starting a scan\n");
+    wifi_station_scan(NULL, wifiScanDoneCb);
+  }
+}
+
+void ICACHE_FLASH_ATTR wifiStartScan() {
+  wifiAps.scanInProgress = 0;
+  os_timer_disarm(&scanTimer);
+  os_timer_setfn(&scanTimer, scanStartCb, NULL);
+  os_timer_arm(&scanTimer, AP_LIST_REFRESH, 0);
+}
+
+int ICACHE_FLASH_ATTR isWifiScanInProgre() {
+  return wifiAps.scanInProgress;
+}
+
 // ===== timers to change state and rescue from failed associations
 
 // reset timer changes back to STA+AP if we can't associate
@@ -118,26 +211,15 @@ static void ICACHE_FLASH_ATTR resetTimerCb(void *arg) {
   }
 }
 
-// configure Wifi, specifically DHCP vs static IP address based on flash config
-static void ICACHE_FLASH_ATTR configWifiIP() {
-    wifi_station_set_hostname("flashConfig.hostname");
-    if (wifi_station_dhcpc_status() == DHCP_STARTED)
-      wifi_station_dhcpc_stop();
-    wifi_station_dhcpc_start();
-    os_printf("Wifi uses DHCP, hostname=%s\n", "flashConfig.hostname");
-    
-  debugIP();
-}
-
 // Init the wireless, which consists of setting a timer if we expect to connect to an AP
 // so we can revert to STA+AP mode if we can't connect.
 void ICACHE_FLASH_ATTR wifiInit() {
   wifi_set_phy_mode(2);
   int x = wifi_get_opmode() & 0x3;
   os_printf("Wifi init, mode=%s\n", wifiMode[x]);
-  configWifiIP();
 
   wifi_set_event_handler_cb(wifiHandleEventCb);
+
   // check on the wifi in a few seconds to see whether we need to switch mode
   os_timer_disarm(&resetTimer);
   os_timer_setfn(&resetTimer, resetTimerCb, NULL);
