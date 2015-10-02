@@ -1,21 +1,28 @@
-#ifndef CGIWIFI_H
-#define CGIWIFI_H
+#ifndef WIFI_H
+#define WIFI_H
 
 #include "httpd.h"
 
 enum { wifiIsDisconnected, wifiIsConnected, wifiGotIP };
 typedef void(*WifiStateChangeCb)(uint8_t wifiStatus);
 
-int cgiWiFiScan(HttpdConnData *connData);
-int cgiWifiInfo(HttpdConnData *connData);
-int cgiWiFi(HttpdConnData *connData);
-int cgiWiFiConnect(HttpdConnData *connData);
-int cgiWiFiSetMode(HttpdConnData *connData);
-int cgiWiFiConnStatus(HttpdConnData *connData);
-int cgiWiFiSpecial(HttpdConnData *connData);
+//WiFi access point data
+typedef struct {
+  char ssid[32];
+  sint8 rssi;
+  char enc;
+} ApData;
+
 void wifiInit(void);
-void wifiAddStateChangeCb(WifiStateChangeCb cb);
+void startWifiScan(void);
+int isWifiScanInProgress(void);
+int getNumberOfAPScanned(void);
+ApData** getScannedAP(void);
+void resetCheck(void);
+void setWifiMode(char*); 
+void connectWifi(char*, char *);
 
 extern uint8_t wifiState;
+extern uint8_t wifiReason;
 
 #endif

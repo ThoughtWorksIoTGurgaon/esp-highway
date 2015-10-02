@@ -1,10 +1,12 @@
 #include <esp8266.h>
 
-#include "lib/uart/uart.h"
-#include "lib/wifi/wifi.h"
-#include "lib/httpd/httpd.h"
+#include "uart.h"
+#include "wifi.h"
+#include "httpd.h"
 
-#define SHOW_HEAP_USE
+#include "wificgi.h"
+
+// #define SHOW_HEAP_USE
 
 HttpdBuiltInUrl builtInUrls[] = {
   { "/wifi/info", cgiWifiInfo, NULL },
