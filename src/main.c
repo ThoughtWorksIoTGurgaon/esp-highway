@@ -5,6 +5,7 @@
 #include "httpd.h"
 
 #include "wificgi.h"
+#include "mqtt_client.h"
 
 // #define SHOW_HEAP_USE
 
@@ -30,11 +31,17 @@ void ICACHE_FLASH_ATTR user_init()
 {
     uart_init(115200, 115200);
 
-    os_printf("Starting\n\r");
+    os_printf("Starting--\n\r");
+
+    os_delay_us(10000L);
+
+    os_printf("--Starting\n\r");
 
     Wifi_init();
 
     httpdInit(builtInUrls, 80);
+
+    mqtt_client_init();
 
 #ifdef SHOW_HEAP_USE
   os_timer_disarm(&prHeapTimer);

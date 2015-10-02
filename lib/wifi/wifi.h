@@ -26,5 +26,6 @@ void Wifi_setWifiMode(char*);
 void Wifi_connect(char*, char*);
 Wifi_Status Wifi_getStatus();
 uint8_t Wifi_getDisconnectionReason();
+void Wifi_addStateChangeCb(Wifi_StateChangeCb);
 
 #endif

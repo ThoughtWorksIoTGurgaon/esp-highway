@@ -113,7 +113,7 @@ CFLAGS=
 
 # which modules (subdirectories) of the project to include in compiling
 LIBRARIES_DIR 	= libraries
-MODULES		  	+= lib/uart lib/httpd lib/cgi lib/wifi src/cgi src 
+MODULES		  	+= lib/uart lib/httpd lib/cgi lib/wifi lib/mqtt src/cgi src/mqtt_client src
 MODULES			+= $(foreach sdir,$(LIBRARIES_DIR),$(wildcard $(sdir)/*))
 EXTRA_INCDIR 	= include .
 
@@ -126,7 +126,7 @@ CFLAGS	+= -Os -ggdb -std=c99 -Werror -Wpointer-arith -Wundef -Wall -Wl,-EL -fno-
 		-D__ets__ -DICACHE_FLASH -D_STDINT_H -Wno-address -DFIRMWARE_SIZE=$(ESP_FLASH_MAX) \
 		-DMCU_RESET_PIN=$(MCU_RESET_PIN) -DMCU_ISP_PIN=$(MCU_ISP_PIN) \
 		-DLED_CONN_PIN=$(LED_CONN_PIN) -DLED_SERIAL_PIN=$(LED_SERIAL_PIN) \
-		-DVERSION="$(VERSION)"
+		-DVERSION="$(VERSION)" -DMQTT -DCHANGE_TO_STA
 
 # linker flags used to generate the main object file
 LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static -Wl,--gc-sections
