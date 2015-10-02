@@ -9,11 +9,11 @@
 // #define SHOW_HEAP_USE
 
 HttpdBuiltInUrl builtInUrls[] = {
-  { "/wifi/info", cgiWifiInfo, NULL },
-  { "/wifi/scan", cgiWiFiScan, NULL },
-  { "/wifi/connect", cgiWiFiConnect, NULL },
-  { "/wifi/connstatus", cgiWiFiConnStatus, NULL },
-  { "/wifi/setmode", cgiWiFiSetMode, NULL },
+  { "/wifi/info", CGI_Wifi_info, NULL },
+  { "/wifi/scan", CGI_Wifi_scan, NULL },
+  { "/wifi/connect", CGI_Wifi_connect, NULL },
+  { "/wifi/connstatus", CGI_Wifi_connStatus, NULL },
+  { "/wifi/setmode", CGI_Wifi_setMode, NULL },
   { NULL, NULL, NULL }
 };
 
@@ -32,7 +32,7 @@ void ICACHE_FLASH_ATTR user_init()
 
     os_printf("Starting\n\r");
 
-    wifiInit();
+    Wifi_init();
 
     httpdInit(builtInUrls, 80);
 

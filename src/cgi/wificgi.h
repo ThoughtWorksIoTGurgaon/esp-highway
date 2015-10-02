@@ -3,12 +3,10 @@
 
 #include "httpd.h"
 
-int cgiWiFiScan(HttpdConnData *connData);
-int cgiWifiInfo(HttpdConnData *connData);
-int cgiWiFi(HttpdConnData *connData);
-int cgiWiFiConnect(HttpdConnData *connData);
-int cgiWiFiSetMode(HttpdConnData *connData);
-int cgiWiFiConnStatus(HttpdConnData *connData);
-int cgiWiFiSpecial(HttpdConnData *connData);
+int CGI_Wifi_scan(HttpdConnData *connData);
+int CGI_Wifi_info(HttpdConnData *connData);
+int CGI_Wifi_connect(HttpdConnData *connData);
+int CGI_Wifi_setMode(HttpdConnData *connData);
+int CGI_Wifi_connStatus(HttpdConnData *connData);
 
 #endif

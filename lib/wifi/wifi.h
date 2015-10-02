@@ -1,28 +1,28 @@
 #ifndef WIFI_H
 #define WIFI_H
 
-#include "httpd.h"
-
-enum { wifiIsDisconnected, wifiIsConnected, wifiGotIP };
-typedef void(*WifiStateChangeCb)(uint8_t wifiStatus);
+typedef enum { 
+	WifiIsDisconnected, 
+	WifiIsConnected, 
+	WifiGotIP 
+} Wifi_Status;
 
 //WiFi access point data
 typedef struct {
   char ssid[32];
   sint8 rssi;
   char enc;
-} ApData;
+} Wifi_ApData;
 
-void wifiInit(void);
-void startWifiScan(void);
-int isWifiScanInProgress(void);
-int getNumberOfAPScanned(void);
-ApData** getScannedAP(void);
-void resetCheck(void);
-void setWifiMode(char*); 
-void connectWifi(char*, char *);
-
-extern uint8_t wifiState;
-extern uint8_t wifiReason;
+void Wifi_init(void);
+void Wifi_startScan(void);
+int Wifi_isScanInProgress(void);
+int Wifi_getNumberOfAPScanned(void);
+Wifi_ApData** Wifi_getScannedAP(void);
+void Wifi_resetCheck(void);
+void Wifi_setWifiMode(char*); 
+void Wifi_connect(char*, char*);
+Wifi_Status Wifi_getStatus();
+uint8_t Wifi_getDisconnectionReason();
 
 #endif
