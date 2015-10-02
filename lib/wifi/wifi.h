@@ -14,6 +14,8 @@ typedef struct {
   char enc;
 } Wifi_ApData;
 
+typedef void(*Wifi_StateChangeCb)(Wifi_Status);
+
 void Wifi_init(void);
 void Wifi_startScan(void);
 int Wifi_isScanInProgress(void);

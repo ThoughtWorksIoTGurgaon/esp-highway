@@ -19,8 +19,10 @@ Cgi/template routines for the /wifi url.
 
 #define WIFI_DBG 
 
+#define MAX_WIFI_STATE_CHANGE_CALLBACK 4
 //#define SLEEP_MODE LIGHT_SLEEP_T
 #define SLEEP_MODE MODEM_SLEEP_T
+
 
 Wifi_Status _wifiState = WifiIsDisconnected;
 Wifi_Status ICACHE_FLASH_ATTR Wifi_getStatus() {
@@ -34,7 +36,21 @@ uint8_t ICACHE_FLASH_ATTR Wifi_getDisconnectionReason() {
 
 static char *_wifiMode[] = { 0, "STA", "AP", "AP+STA" };
 
-void (*wifiStatusCb)(uint8_t); // callback when wifi status changes
+static Wifi_StateChangeCb _wifiStateChangeCb[MAX_WIFI_STATE_CHANGE_CALLBACK];
+
+void ICACHE_FLASH_ATTR Wifi_addStateChangeCb(Wifi_StateChangeCb cb) {
+  for (int i = 0; i < 4; i++) {
+    if (_wifiStateChangeCb[i] == cb) return;
+    if (_wifiStateChangeCb[i] == NULL) {
+      _wifiStateChangeCb[i] = cb;
+      return;
+    }
+  }
+#ifdef WIFI_DBG
+  os_printf("WIFI: max state change cb count exceeded\n");
+#endif
+}
+
 
 // handler for wifi status change callback coming in from espressif library
 static void ICACHE_FLASH_ATTR _wifiHandleEventCb(System_Event_t *evt) {
@@ -84,6 +100,10 @@ static void ICACHE_FLASH_ATTR _wifiHandleEventCb(System_Event_t *evt) {
     break;
   default:
     break;
+  }
+
+  for (int i = 0; i < 4; i++) {
+    if (_wifiStateChangeCb[i] != NULL) (_wifiStateChangeCb[i])(_wifiState);
   }
 }
 
