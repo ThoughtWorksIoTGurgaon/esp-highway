@@ -117,11 +117,7 @@ Troubleshooting
 
 Building the firmware
 ---------------------
-The firmware has been built using the [esp-open-sdk](https://github.com/pfalcon/esp-open-sdk)
-on a Linux system. 
-
-Follow the following steps to build the firmware.
-1. 
+The firmware has been built using the esp-open-sdk on a Linux system. Create an esp8266 directory, install the esp-open-sdk into a sub-directory. Download the Espressif SDK (use the version mentioned in the release notes) from their download forum and also expand it into a sub-directory. Then clone the esp-link repository into a third sub-directory. This way the relative paths in the Makefile will work.
 
 If you choose a different directory structure look at the Makefile for the appropriate environment
 variables to define.
