@@ -12,7 +12,7 @@
 #define DBG_MQTTCLIENT(format, ...) do { } while(0)
 #endif
 
-MQTT_Client mqttClient; // main mqtt client used by esp-link
+MQTT_Client mqttClient; // main mqtt client used by esp-highway
 
 #ifdef BRUNNELS
 char* statusTopicStr;

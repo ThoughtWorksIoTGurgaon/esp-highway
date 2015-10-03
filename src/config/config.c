@@ -112,7 +112,7 @@ bool ICACHE_FLASH_ATTR configRestore(void) {
     os_sprintf(chipIdStr, "%06x", system_get_chip_id());
 
     char hostname[16];
-    os_strcpy(hostname, "esp-link-");
+    os_strcpy(hostname, "esp-highway-");
     os_strcat(hostname, chipIdStr);
     os_memcpy(&flashConfig.mqtt_clientid, hostname, os_strlen(hostname));
 

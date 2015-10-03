@@ -1,5 +1,5 @@
 #
-# Makefile for esp-link - https://github.com/jeelabs/esp-link
+# Makefile for esp-highway
 #
 # Start by setting the directories for the toolchain a few lines down
 # the default target will build the firmware images
@@ -42,7 +42,7 @@ LED_CONN_PIN        ?= 0
 # GPIO pin used for "serial activity" LED, active low
 LED_SERIAL_PIN      ?= 14
 
-# --------------- esp-link config options ---------------
+# --------------- esp-highway config options ---------------
 
 # Optional Modules
 MODULES ?=
@@ -95,8 +95,6 @@ ET_FS               ?= 32m     # 32Mbit flash size in esptool flash command
 ET_FF               ?= 80m     # 80Mhz flash speed in esptool flash command
 ET_BLANK            ?= 0x3FE000 # where to flash blank.bin to erase wireless settings
 endif
-
-# --------------- esp-link version        ---------------
 
 # Output directors to store intermediate compiled files
 # relative to the project directory

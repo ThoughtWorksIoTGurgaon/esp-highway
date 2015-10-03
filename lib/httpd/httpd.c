@@ -222,7 +222,7 @@ void ICACHE_FLASH_ATTR httpdStartResponse(HttpdConnData *conn, int code) {
   int l;
   conn->priv->code = code;
   char *status = code < 400 ? "OK" : "ERROR";
-  l = os_sprintf(buff, "HTTP/1.0 %d %s\r\nServer: esp-link\r\nConnection: close\r\n", code, status);
+  l = os_sprintf(buff, "HTTP/1.0 %d %s\r\nConnection: close\r\n", code, status);
   httpdSend(conn, buff, l);
 }
 

@@ -5,9 +5,10 @@
 #include "httpd.h"
 
 #include "config.h"
+#include "mqtt_client.h"
 
 #include "wificgi.h"
-#include "mqtt_client.h"
+#include "configcgi.h"
 #include "mqttcgi.h"
 
 #define SHOW_HEAP_USE
@@ -22,9 +23,12 @@ HttpdBuiltInUrl builtInUrls[] = {
   { "/mqtt/getConf", CGI_Mqtt_getConfig, NULL },
   { "/mqtt/setConf", CGI_Mqtt_setConfig, NULL },
 
+  { "/config/wipe", CGI_Config_wipeConfig, NULL },
+  { "/config/restore", CGI_Config_restoreConfig, NULL },
+  { "/config/save", CGI_Config_saveConfig, NULL },
+
   { NULL, NULL, NULL }
 };
-
 
 #ifdef SHOW_HEAP_USE
 static ETSTimer prHeapTimer;
@@ -72,7 +76,6 @@ void ICACHE_FLASH_ATTR user_init()
   uint32_t fid = spi_flash_get_id();
   os_printf("Flash map %s, manuf 0x%02lX chip 0x%04lX\n", flash_maps[system_get_flash_size_map()],
       fid & 0xff, (fid&0xff00)|((fid>>16)&0xff));
-
 
 
 #ifdef SHOW_HEAP_USE
