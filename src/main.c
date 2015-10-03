@@ -8,6 +8,7 @@
 
 #include "wificgi.h"
 #include "mqtt_client.h"
+#include "mqttcgi.h"
 
 #define SHOW_HEAP_USE
 
@@ -17,6 +18,10 @@ HttpdBuiltInUrl builtInUrls[] = {
   { "/wifi/connect", CGI_Wifi_connect, NULL },
   { "/wifi/connstatus", CGI_Wifi_connStatus, NULL },
   { "/wifi/setmode", CGI_Wifi_setMode, NULL },
+
+  { "/mqtt/getConf", CGI_Mqtt_getConfig, NULL },
+  { "/mqtt/setConf", CGI_Mqtt_setConfig, NULL },
+
   { NULL, NULL, NULL }
 };
 
@@ -28,6 +33,14 @@ static void ICACHE_FLASH_ATTR prHeapTimerCb(void *arg) {
   os_printf("Heap: %ld\n", (unsigned long)system_get_free_heap_size());
 }
 #endif
+
+static char *rst_codes[] = {
+  "normal", "wdt reset", "exception", "soft wdt", "restart", "deep sleep", "external",
+};
+static char *flash_maps[] = {
+  "512KB:256/256", "256KB", "1MB:512/512", "2MB:512/512", "4MB:512/512",
+  "2MB:1024/1024", "4MB:1024/1024"
+};
 
 void ICACHE_FLASH_ATTR user_init()
 {
@@ -49,6 +62,18 @@ void ICACHE_FLASH_ATTR user_init()
     httpdInit(builtInUrls, 80);
 
     mqtt_client_init();
+
+
+  struct rst_info *rst_info = system_get_rst_info();
+  os_printf("Reset cause: %d=%s\n", rst_info->reason, rst_codes[rst_info->reason]);
+  os_printf("exccause=%d epc1=0x%x epc2=0x%x epc3=0x%x excvaddr=0x%x depc=0x%x\n",
+    rst_info->exccause, rst_info->epc1, rst_info->epc2, rst_info->epc3,
+    rst_info->excvaddr, rst_info->depc);
+  uint32_t fid = spi_flash_get_id();
+  os_printf("Flash map %s, manuf 0x%02lX chip 0x%04lX\n", flash_maps[system_get_flash_size_map()],
+      fid & 0xff, (fid&0xff00)|((fid>>16)&0xff));
+
+
 
 #ifdef SHOW_HEAP_USE
   os_timer_disarm(&prHeapTimer);
