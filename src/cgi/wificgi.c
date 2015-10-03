@@ -188,43 +188,6 @@ static char* ICACHE_FLASH_ATTR _wifiGetReason() {
   return _wifiReasons[1];
 }
 
-int ICACHE_FLASH_ATTR CGI_Wifi_connStatus(HttpdConnData *connData) {
-  char buff[1024];
-  int len;
-
-  if (connData->conn==NULL) return HTTPD_CGI_DONE; // Connection aborted. Clean up.
-  jsonHeader(connData, 200);
-
-  len = os_sprintf(buff, "{");
-  len += _printWifiInfo(buff+len);
-  len += os_sprintf(buff+len, ", ");
-
-  if (Wifi_getDisconnectionReason() != 0) {
-    len += os_sprintf(buff+len, "\"reason\": \"%s\", ", _wifiGetReason());
-  }
-
-#if 0
-  // commented out 'cause often the client that requested the change can't get a request in to
-  // find out that it succeeded. Better to just wait the std 15 seconds...
-  int st=wifi_station_get_connect_status();
-  if (st == STATION_GOT_IP) {
-    if (wifi_get_opmode() != 1) {
-      // Reset into AP-only mode sooner.
-      os_timer_disarm(&resetTimer);
-      os_timer_setfn(&resetTimer, resetTimerCb, NULL);
-      os_timer_arm(&resetTimer, 1000, 0);
-    }
-  }
-#endif
-
-  len += os_sprintf(buff+len, "\"x\":0}\n");
-#ifdef CGIWIFI_DBG
-  //os_printf("  -> %s\n", buff);
-#endif
-  httpdSend(connData, buff, len);
-  return HTTPD_CGI_DONE;
-}
-
 // Cgi to return various Wifi information
 int ICACHE_FLASH_ATTR CGI_Wifi_info(HttpdConnData *connData) {
   char buff[1024];
@@ -233,7 +196,13 @@ int ICACHE_FLASH_ATTR CGI_Wifi_info(HttpdConnData *connData) {
 
   os_strcpy(buff, "{");
   _printWifiInfo(buff+1);
-  os_strcat(buff, "}");
+    len += os_sprintf(buff+len, ", ");
+
+  if (Wifi_getDisconnectionReason() != 0) {
+    len += os_sprintf(buff+len, "\"reason\": \"%s\"", _wifiGetReason());
+  }
+
+  os_strcat(buff, " }");
 
   jsonHeader(connData, 200);
   httpdSend(connData, buff, -1);
