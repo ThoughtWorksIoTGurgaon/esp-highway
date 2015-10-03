@@ -2,6 +2,7 @@
 #include <esp8266.h>
 #include "mqtt.h"
 #include "wifi.h"
+#include "config.h"
 
 #define MQTTCLIENT_DBG
 
@@ -10,16 +11,6 @@
 #else
 #define DBG_MQTTCLIENT(format, ...) do { } while(0)
 #endif
-
-#define MQTT_ENABLE 1
-#define MQTT_HOST "192.168.43.11"
-#define MQTT_PORT 1883
-#define MQTT_USERNAME "\0"
-#define MQTT_PASSWORD "\0"
-#define MQTT_CLIENT_ID "my-esp"
-#define MQTT_TIMEOUT 2
-#define MQTT_KEEPALIVE 60
-
 
 MQTT_Client mqttClient; // main mqtt client used by esp-link
 
@@ -87,7 +78,7 @@ mqttDataCb(uint32_t *args, const char* topic, uint32_t topic_len, const char *da
 void ICACHE_FLASH_ATTR
 wifiStateChangeCb(Wifi_Status status)
 {
-  if (MQTT_ENABLE) {
+  if (flashConfig.mqtt_enable) {
     if (status == WifiGotIP && mqttClient.connState != TCP_CONNECTING) {
       MQTT_Connect(&mqttClient);
     }
@@ -100,8 +91,17 @@ wifiStateChangeCb(Wifi_Status status)
 void ICACHE_FLASH_ATTR
 mqtt_client_init()
 {
-  MQTT_Init(&mqttClient, MQTT_HOST, MQTT_PORT, 0, MQTT_TIMEOUT,
-    MQTT_CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD, MQTT_KEEPALIVE);
+  MQTT_Init(
+    &mqttClient, 
+    flashConfig.mqtt_host, 
+    flashConfig.mqtt_port, 
+    0, 
+    flashConfig.mqtt_timeout,
+    flashConfig.mqtt_clientid, 
+    flashConfig.mqtt_username, 
+    flashConfig.mqtt_password, 
+    flashConfig.mqtt_keepalive
+  );
 
 // removed client_id concat for now until a better solution is devised
 //      statusTopicStr = (char*)os_zalloc(strlen(flashConfig.mqtt_clientid) + strlen(flashConfig.mqtt_status_topic) + 2);
@@ -110,18 +110,18 @@ mqtt_client_init()
 
 #ifdef BRUNNELS
     char* onlineMsg = " is online";
-    onlineMsgStr = (char*)os_zalloc(strlen(MQTT_CLIENT_ID) + strlen(onlineMsg) + 1);
-    os_strcpy(onlineMsgStr, MQTT_CLIENT_ID);
+    onlineMsgStr = (char*)os_zalloc(strlen(flashConfig.mqtt_clientid) + strlen(onlineMsg) + 1);
+    os_strcpy(onlineMsgStr, flashConfig.mqtt_clientid);
     os_strcat(onlineMsgStr, onlineMsg);
 
     char* offlineMsg = " is offline";
-    char* offlineMsgStr = (char*)os_zalloc(strlen(MQTT_CLIENT_ID) + strlen(offlineMsg) + 1);
-    os_strcpy(offlineMsgStr, MQTT_CLIENT_ID);
+    char* offlineMsgStr = (char*)os_zalloc(strlen(flashConfig.mqtt_clientid) + strlen(offlineMsg) + 1);
+    os_strcpy(offlineMsgStr, flashConfig.mqtt_clientid);
     os_strcat(offlineMsgStr, offlineMsg);
 
     char* lwt = "/lwt";
-    char *lwtMsgStr = (char*)os_zalloc(strlen(MQTT_CLIENT_ID) + strlen(lwt) + 1);
-    os_strcpy(lwtMsgStr, MQTT_CLIENT_ID);
+    char *lwtMsgStr = (char*)os_zalloc(strlen(flashConfig.mqtt_clientid) + strlen(lwt) + 1);
+    os_strcpy(lwtMsgStr, flashConfig.mqtt_clientid);
     os_strcat(lwtMsgStr, lwt);
     MQTT_InitLWT(&mqttClient, lwtMsgStr, offlineMsg, 0, 0);
 #endif
@@ -131,7 +131,7 @@ mqtt_client_init()
   MQTT_OnPublished(&mqttClient, mqttPublishedCb);
   MQTT_OnData(&mqttClient, mqttDataCb);
 
-  if (MQTT_ENABLE && strlen(MQTT_HOST) > 0)
+  if (flashConfig.mqtt_enable && strlen(flashConfig.mqtt_host) > 0)
     MQTT_Connect(&mqttClient);
 
   Wifi_addStateChangeCb(wifiStateChangeCb);

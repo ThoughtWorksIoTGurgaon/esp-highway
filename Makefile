@@ -113,7 +113,8 @@ CFLAGS=
 
 # which modules (subdirectories) of the project to include in compiling
 LIBRARIES_DIR 	= libraries
-MODULES		  	+= lib/uart lib/httpd lib/cgi lib/wifi lib/mqtt src/cgi src/mqtt_client src
+MODULES		  	+= lib/uart lib/crc lib/httpd lib/cgi lib/wifi lib/mqtt
+MODULES		  	+= src/cgi src/config src/mqtt_client src
 MODULES			+= $(foreach sdir,$(LIBRARIES_DIR),$(wildcard $(sdir)/*))
 EXTRA_INCDIR 	= include .
 
